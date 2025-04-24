@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>感情カレンダー</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css' rel='stylesheet' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
+  <style>
+    :root {
+      --accent: #00c9ff;
+      --accent-dark: #007aaf;
+      --bg-light: #f4f4f7;
+      --bg-dark: #0f0f10;
+      --card-bg-light: #ffffff;
+      --card-bg-dark: #1c1c1e;
+      --text-light: #000000;
+      --text-dark: #ffffff;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      transition: all 0.3s ease;
+    }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-top: 2rem;
+      background: linear-gradient(to right, var(--accent), #005f9e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    @keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+    .calendar-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--card-bg-dark);
+      border-radius: 1rem;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.05);
+      transition: background 0.3s ease;
+    }
+
+    body.light .calendar-container {
+      background: var(--card-bg-light);
+    }
+
+    .top-controls {
+      text-align: center;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .top-controls a {
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      background: var(--accent);
+      color: var(--bg-dark);
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .top-controls a:hover {
+      background: var(--accent-dark);
+    }
+
+    .theme-toggle {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .theme-toggle button {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.4rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+  </style>
+</head>
+<body>
+  <h1>📅 感情カレンダー</h1>
+  <p style="text-align:center; font-size: 0.9rem; opacity: 0.7;">
+    👤 ユーザー: {{ user }} |
+    <a href="/logout" style="color: var(--accent); text-decoration: none;">ログアウト</a>
+  </p>
+  
+  <!-- アバター表示 -->
+<div style="text-align:center; margin-top: 1rem;">
+  <h2>今月のアバター</h2>
+  <img src="{{ url_for('static', filename='avatars/char' + char_type|string + '_lv' + level|string + '.png') }}"
+       alt="現在のアバター" style="max-height: 160px;">
+  <p>レベル {{ level }} / キャラタイプ {{ char_type }}</p>
+  <p>🌟 現在のスコア: {{ points }} / 次のレベルまであと {{ remaining }} ポイント</p>
+</div>
+
+  
+  
+  <div class="theme-toggle">
+    <button onclick="toggleTheme()">🌗 テーマ切り替え</button>
+  </div>
+
+  <div class="top-controls">
+    <a href="/write">＋ 新しい日記を書く</a>
+    <a href="/graph" style="margin-left: 1rem;">📈 グラフを見る</a>
+  </div>
+
+  <div class="calendar-container">
+    <div id="calendar"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'ja',
+        events: '/calendar',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: ''
+        },
+        eventClick: function(info) {
+          const title = info.event.title;
+          const date = info.event.startStr;
+          const sentiment = info.event.extendedProps.sentiment;
+          const score = info.event.extendedProps.score;
+          const text = info.event.extendedProps.text;
+          alert(`📅 ${date}\n📝 ${title}\n感情: ${sentiment}\nスコア: ${score.toFixed(2)}\n\n内容:\n${text}`);
+        }
+      });
+      calendar.render();
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+
+    // 初期テーマ反映
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light');
+    }
+  </script>
+  {% if level_up %}
+  <div id="levelup-overlay" style="
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.5s ease;
+  ">
+    🎉 レベルアップ！おめでとう！ 🎉
+  </div>
+  <script>
+    setTimeout(() => {
+      const overlay = document.getElementById('levelup-overlay');
+      if (overlay) overlay.remove();
+    }, 3000);
+  </script>
+  {% endif %}
+  
+</body>
+</html>

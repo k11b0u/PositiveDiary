@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>日記を書く</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #00c9ff;
+      --accent-dark: #007aaf;
+      --bg-light: #f4f4f7;
+      --bg-dark: #0f0f10;
+      --card-bg-light: #ffffff;
+      --card-bg-dark: #1c1c1e;
+      --text-light: #000000;
+      --text-dark: #ffffff;
+      --text-muted-light: #555;
+      --text-muted-dark: #aaa;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      transition: all 0.3s ease;
+    }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    .container {
+      background: var(--card-bg-dark);
+      padding: 3rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+      max-width: 700px;
+      width: 90%;
+      animation: popIn 0.8s ease-in-out;
+      transition: background 0.3s ease;
+    }
+
+    body.light .container {
+      background: var(--card-bg-light);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(to right, var(--accent), #005f9e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.75rem;
+      font-weight: bold;
+      color: var(--text-muted-dark);
+    }
+
+    body.light label {
+      color: var(--text-muted-light);
+    }
+
+    textarea {
+      width: 100%;
+      background: #2c2c2e;
+      color: var(--text-dark);
+      border: 1px solid #444;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      resize: vertical;
+      transition: 0.3s ease;
+    }
+
+    body.light textarea {
+      background: #fff;
+      color: var(--text-light);
+      border: 1px solid #ccc;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 5px var(--accent);
+    }
+
+    button {
+      display: block;
+      margin: 2rem auto 0;
+      padding: 0.8rem 2rem;
+      background: var(--accent);
+      color: var(--bg-dark);
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .back-link a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .back-link a:hover {
+      color: var(--accent-dark);
+    }
+
+    .theme-toggle {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .theme-toggle button {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.4rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 日記を入力</h1>
+    <p style="text-align:center; font-size: 0.9rem; opacity: 0.7;">
+      👤 ユーザー: {{ user }} |
+      <a href="/logout" style="color: var(--accent); text-decoration: none;">ログアウト</a>
+    </p>
+    
+    <form method="POST" action="{{ url_for('post_diary') }}">
+      <label for="diary">今日の出来事や気持ちを書いてみよう：</label>
+      <textarea name="diary" required></textarea>
+      <button type="submit">送信</button>
+    </form>
+    <div class="back-link">
+      <a href="{{ url_for('home') }}">← カレンダーに戻る</a>
+    </div>
+    <div class="theme-toggle">
+      <button onclick="toggleTheme()">🌗 テーマ切り替え</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light');
+    }
+  </script>
+</body>
+</html>
