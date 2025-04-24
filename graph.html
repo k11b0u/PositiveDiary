@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>感情スコアグラフ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --accent: #00c9ff;
+      --accent-dark: #007aaf;
+      --bg-dark: #0f0f10;
+      --bg-light: #f4f4f7;
+      --card-dark: #1c1c1e;
+      --card-light: #ffffff;
+      --text-dark: #ffffff;
+      --text-light: #000000;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin: 2rem 0 1rem;
+    }
+
+    .theme-toggle {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .theme-toggle button {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.4rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .graph-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-dark);
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+
+    body.light .graph-container {
+      background: var(--card-light);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 400px !important;
+    }
+
+    .back-button {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .back-button a {
+      background: var(--accent);
+      color: #000;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .back-button a:hover {
+      background: var(--accent-dark);
+    }
+  </style>
+</head>
+<body>
+  <h1>📈 今月の感情スコア推移</h1>
+
+  <div class="theme-toggle">
+    <button onclick="toggleTheme()">🌗 テーマ切り替え</button>
+  </div>
+
+  <div class="graph-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <div class="back-button">
+    <a href="/home">← ホームに戻る</a>
+  </div>
+
+  <script>
+    const chartData = {{ graph_data|tojson }};
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+
+    const isLight = localStorage.getItem('theme') === 'light';
+    if (isLight) document.body.classList.add('light');
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.map(item => item.date),
+        datasets: [{
+          label: '感情スコア合計（その日）',
+          data: chartData.map(item => item.value),
+          borderColor: '#00c9ff',
+          backgroundColor: 'rgba(0, 201, 255, 0.1)',
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            ticks: {
+              stepSize: 1,
+              color: isLight ? '#000' : '#fff',
+              callback: function(value) {
+                if (value === 1) return 'ポジティブ (1)';
+                if (value === 0) return 'ニュートラル (0)';
+                if (value === -1) return 'ネガティブ (-1)';
+                return value;
+              }
+            },
+            title: {
+              display: true,
+              text: '感情スコア',
+              color: isLight ? '#000' : '#fff'
+            },
+            grid: {
+              color: isLight ? '#ccc' : 'rgba(255,255,255,0.1)'
+            }
+          },
+          x: {
+            ticks: {
+              color: isLight ? '#000' : '#fff'
+            },
+            grid: {
+              color: isLight ? '#ccc' : 'rgba(255,255,255,0.1)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: isLight ? '#000' : '#fff'
+            }
+          }
+        }
+      }
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      // reload for chart color update
+      location.reload();
+    }
+  </script>
+</body>
+</html>
